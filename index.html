@@ -4,39 +4,129 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Serverless P2P Tree BBS</title>
-  <script type="module">
-    import { joinRoom } from 'https://cdn.skypack.dev/trystero/torrent';
-    window.joinRoom = joinRoom;
-    window.initP2P();
-  </script>
   <style>
-    :root { --bg: #1e1e1e; --sidebar: #252526; --border: #333333; --text: #cccccc; --active: #007acc; }
+    :root {
+      --bg: #1e1e1e;
+      --sidebar: #252526;
+      --border: #333333;
+      --text: #cccccc;
+      --active: #007acc;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
-    body { display: flex; height: 100vh; height: 100dvh; background: var(--bg); color: var(--text); overflow: hidden; position: relative; }
-    #sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.25s ease; z-index: 100; }
-    .sidebar-header { padding: 12px; font-size: 11px; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .peer-count { color: #4ec9b0; font-size: 10px; }
+    body {
+      display: flex;
+      height: 100vh;
+      height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      position: relative;
+    }
+    #sidebar {
+      width: 260px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+      z-index: 100;
+    }
+    .sidebar-header {
+      padding: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .peer-count { color: #4ec9b0; font-size: 11px; font-weight: bold; }
     #tree-list { flex: 1; list-style: none; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .tree-item { padding: 12px 14px; cursor: pointer; display: flex; justify-content: space-between; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .tree-item {
+      padding: 12px 14px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
     .tree-item:active, .tree-item:hover { background: #2a2d2e; }
     .tree-item.active { background: #37373d; color: #fff; border-left: 3px solid var(--active); }
     #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .top-bar { display: flex; align-items: center; background: var(--sidebar); border-bottom: 1px solid var(--border); padding: 8px 12px; gap: 10px; }
-    .menu-btn { display: none; background: #333; border: 1px solid var(--border); color: #fff; font-size: 16px; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      background: var(--sidebar);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      gap: 10px;
+    }
+    .menu-btn {
+      display: none;
+      background: #333;
+      border: 1px solid var(--border);
+      color: #fff;
+      font-size: 16px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
     .tab-title { font-size: 12px; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; -webkit-overflow-scrolling: touch; }
-    .msg-card { background: var(--sidebar); border-left: 3px solid var(--active); padding: 10px 12px; border-radius: 4px; word-break: break-word; }
+    #messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .msg-card {
+      background: var(--sidebar);
+      border-left: 3px solid var(--active);
+      padding: 10px 12px;
+      border-radius: 4px;
+      word-break: break-word;
+    }
     .msg-meta { font-size: 10px; color: #888; margin-bottom: 4px; }
     .msg-text { font-size: 14px; white-space: pre-wrap; line-height: 1.4; }
-    #form { padding: 8px 12px; background: var(--sidebar); border-top: 1px solid var(--border); display: flex; gap: 8px; }
-    input, button { background: #3c3c3c; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; outline: none; font-size: 16px; }
-    #name { width: 75px; flex-shrink: 0; }
+    #form {
+      padding: 8px 12px;
+      background: var(--sidebar);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+    input, button {
+      background: #3c3c3c;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      outline: none;
+      font-size: 16px;
+    }
+    #name { width: 80px; flex-shrink: 0; }
     #content { flex: 1; min-width: 0; }
-    button { background: var(--active); cursor: pointer; border: none; font-weight: bold; flex-shrink: 0; padding: 10px 14px; }
+    button {
+      background: var(--active);
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+      flex-shrink: 0;
+      padding: 10px 14px;
+    }
     #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; }
     @media (max-width: 768px) {
       .menu-btn { display: inline-block; }
-      #sidebar { position: fixed; top: 0; bottom: 0; left: 0; height: 100dvh; transform: translateX(-100%); box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+      #sidebar {
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        height: 100dvh;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+      }
       #sidebar.open { transform: translateX(0); }
       #overlay.open { display: block; }
     }
@@ -47,11 +137,12 @@
   <div id="sidebar">
     <div class="sidebar-header">
       <span>BOARDS</span>
-      <span id="peers" class="peer-count">接続中...</span>
+      <span id="peers" class="peer-count">📡 準備中...</span>
     </div>
     <ul id="tree-list"></ul>
     <button onclick="createBoard()" style="margin: 10px; font-size: 12px; padding: 10px;">+ 新しい板を作成</button>
   </div>
+
   <div id="main">
     <div class="top-bar">
       <button class="menu-btn" onclick="toggleSidebar()">☰ 板一覧</button>
@@ -64,58 +155,118 @@
       <button type="submit">送信</button>
     </form>
   </div>
-  <script>
+
+  <script type="module">
+    // ★ 安定版 CDN ＆ 高速 Nostr シグナリングを採用
+    import { joinRoom } from 'https://cdn.jsdelivr.net/npm/trystero@0.21.5/nostr/+esm';
+
     let state = JSON.parse(localStorage.getItem("p2p_bbs_data")) || {
       boards: [
         { id: "general", name: "general", updatedAt: Date.now() },
         { id: "random", name: "random", updatedAt: Date.now() - 1000 }
       ],
-      posts: { "general": [{ author: "システム", text: "モバイル対応P2P掲示板へようこそ！", time: Date.now() }], "random": [] }
+      posts: { "general": [{ author: "システム", text: "P2P掲示板が正常に初期化されました！", time: Date.now() }], "random": [] }
     };
+
     let activeBoardId = "general";
     let sendBroadcast = null;
-    function saveState() { localStorage.setItem("p2p_bbs_data", JSON.stringify(state)); }
+
+    function saveState() {
+      localStorage.setItem("p2p_bbs_data", JSON.stringify(state));
+    }
+
     window.toggleSidebar = function() {
       document.getElementById("sidebar").classList.toggle("open");
       document.getElementById("overlay").classList.toggle("open");
     };
-    window.initP2P = function() {
-      const room = window.joinRoom({ appId: 'free-zero-p2p-bbs' }, 'global-bbs-room');
+
+    // 初期化とP2P接続
+    function init() {
+      renderTree();
+      renderMessages();
+
+      const peerStatus = document.getElementById("peers");
+      peerStatus.innerText = "📡 ピア探索中...";
+
+      // 共通ルームに合流（アプリ識別子 + ルーム名）
+      const room = joinRoom({ appId: 'p2p-tree-bbs-v2-stable' }, 'global-lounge');
       const [sendMsg, getMsg] = room.makeAction('post');
       const [syncReq, getSyncReq] = room.makeAction('sync_req');
       const [syncRes, getSyncRes] = room.makeAction('sync_res');
+
       sendBroadcast = sendMsg;
-      room.onPeerJoin(peerId => { updatePeerCount(room); syncReq({ time: Date.now() }, peerId); });
-      room.onPeerLeave(() => updatePeerCount(room));
-      getMsg(data => receivePost(data));
-      getSyncReq((_, peerId) => syncRes(state, peerId));
-      getSyncRes(remoteState => { mergeState(remoteState); renderTree(); renderMessages(); });
-      updatePeerCount(room); renderTree(); renderMessages();
-    };
-    function updatePeerCount(room) {
-      document.getElementById("peers").innerText = `● ${Object.keys(room.getPeers()).length + 1}人接続中`;
+
+      function updatePeerUI() {
+        const count = Object.keys(room.getPeers()).length;
+        if (count === 0) {
+          peerStatus.style.color = "#e5c07b";
+          peerStatus.innerText = "⏳ 待機中 (相手待ち)";
+        } else {
+          peerStatus.style.color = "#4ec9b0";
+          peerStatus.innerText = `● ${count + 1}人接続中`;
+        }
+      }
+
+      room.onPeerJoin(peerId => {
+        updatePeerUI();
+        // 新しい参加者に同期リクエストを送る
+        syncReq({ time: Date.now() }, peerId);
+      });
+
+      room.onPeerLeave(() => {
+        updatePeerUI();
+      });
+
+      getMsg(data => {
+        receivePost(data);
+      });
+
+      getSyncReq((_, peerId) => {
+        syncRes(state, peerId);
+      });
+
+      getSyncRes(remoteState => {
+        mergeState(remoteState);
+        renderTree();
+        renderMessages();
+      });
+
+      // 最初の表示更新
+      updatePeerUI();
     }
+
     function receivePost(data) {
       const { boardId, post, updatedAt } = data;
       if (!state.posts[boardId]) state.posts[boardId] = [];
       state.posts[boardId].push(post);
+
       const board = state.boards.find(b => b.id === boardId);
       if (board) board.updatedAt = updatedAt;
       else state.boards.push({ id: boardId, name: boardId, updatedAt });
-      saveState(); renderTree();
+
+      saveState();
+      renderTree();
       if (activeBoardId === boardId) renderMessages();
     }
-    function sendPost(e) {
+
+    window.sendPost = function(e) {
       e.preventDefault();
       const content = document.getElementById("content");
       const name = document.getElementById("name").value;
       if (!content.value.trim()) return;
+
       const now = Date.now();
       const newPost = { author: name, text: content.value, time: now };
+
       receivePost({ boardId: activeBoardId, post: newPost, updatedAt: now });
-      if (sendBroadcast) sendBroadcast({ boardId: activeBoardId, post: newPost, updatedAt: now });
+
+      if (sendBroadcast) {
+        sendBroadcast({ boardId: activeBoardId, post: newPost, updatedAt: now });
+      }
+
       content.value = "";
-    }
+    };
+
     function renderTree() {
       state.boards.sort((a, b) => b.updatedAt - a.updatedAt);
       const list = document.getElementById("tree-list");
@@ -128,11 +279,13 @@
           activeBoardId = b.id;
           document.getElementById("sidebar").classList.remove("open");
           document.getElementById("overlay").classList.remove("open");
-          renderTree(); renderMessages();
+          renderTree();
+          renderMessages();
         };
         list.appendChild(li);
       });
     }
+
     function renderMessages() {
       document.getElementById("active-tab").innerText = `📄 ${activeBoardId}.md`;
       const container = document.getElementById("messages");
@@ -145,7 +298,8 @@
       });
       container.scrollTop = container.scrollHeight;
     }
-    function createBoard() {
+
+    window.createBoard = function() {
       const name = prompt("板の名前:");
       if (!name) return;
       const id = name.trim().toLowerCase();
@@ -155,8 +309,10 @@
       saveState();
       document.getElementById("sidebar").classList.remove("open");
       document.getElementById("overlay").classList.remove("open");
-      renderTree(); renderMessages();
-    }
+      renderTree();
+      renderMessages();
+    };
+
     function mergeState(remote) {
       if (!remote || !remote.boards) return;
       remote.boards.forEach(rb => {
@@ -167,11 +323,15 @@
       for (const bId in remote.posts) {
         if (!state.posts[bId]) state.posts[bId] = [];
         const times = new Set(state.posts[bId].map(p => p.time));
-        remote.posts[bId].forEach(rp => { if (!times.has(rp.time)) state.posts[bId].push(rp); });
+        remote.posts[bId].forEach(rp => {
+          if (!times.has(rp.time)) state.posts[bId].push(rp);
+        });
         state.posts[bId].sort((a, b) => a.time - b.time);
       }
       saveState();
     }
+
+    init();
   </script>
 </body>
 </html>
